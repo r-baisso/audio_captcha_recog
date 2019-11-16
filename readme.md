@@ -21,4 +21,12 @@
 ```
      python project.py
 ```
-* Tomar o devido cuidado para nao executar utilizando python 2
+* Tomar o devido cuidado para nao executar utilizando python 2.
+
+* Os testes foram realizados tendo o Python 3.6 como versão default do sistema.
+
+### Resultados iniciais
+
+* Para o classificador SVC (kernel linear) obtivemos uma taxa de acerto de aproximadamente 60%.
+
+* Para o classificador KNN (k neighbours) obtivemos uma taxa de acerto de aproximadamente 57%.
