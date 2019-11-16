@@ -4,7 +4,10 @@
 # In[1]:
 
 
+print("-- Bem vindo ao Projeto de Reconhecimento de Audio --")
+print("\nRealizando Imports de Libs necessarias...")
 import librosa
+import librosa.display
 import math
 import glob
 import random
@@ -16,8 +19,11 @@ import re
 from scipy.fftpack import dct
 from scipy.fftpack import fft
 from scipy.fftpack import ifft
+from sklearn.metrics import confusion_matrix
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+print("Definindo Funcoes necessarias...")
 
 
 # In[2]:
@@ -37,7 +43,7 @@ def extract_intervals(signal, cut):
     data_interval = []
     interval = int(len(signal) // cut)
     for i in range(0, cut) :
-        data_interval.append(pd.Series(data[i*interval : (i+1)*interval]))
+        data_interval.append(pd.Series(signal[i*interval : (i+1)*interval]))
     return data_interval
 
 
@@ -66,12 +72,20 @@ def calc_dct(segmento):
 
 
 #calcula o Mel Spectrogram do sinal
-def calc_mel(segmento):
+def calc_mel(segmento, sr):
     av = segmento.to_numpy(copy=True)
     return np.mean(librosa.feature.melspectrogram(av, sr=sr).T,axis=0)
 
 
 # In[7]:
+
+
+def calc_chroma(segmento, sr):
+    av = segmento.to_numpy(copy=True)
+    return np.mean(librosa.feature.chroma_cens(y=av, sr=sr, n_chroma=24).T,axis=0)
+
+
+# In[8]:
 
 
 #calcula a FFT do sinal
@@ -80,7 +94,7 @@ def calc_fft(segmento):
     return abs(fft(av, n=24))
 
 
-# In[8]:
+# In[9]:
 
 
 #faz a aquisicao do caminho de todos os arquivos na pasta path
@@ -93,7 +107,7 @@ def get_labels(path_file):
     return list(path_file[-8:-4])
 
 
-# In[88]:
+# In[10]:
 
 
 #realiza a extracao de features do sinal
@@ -103,14 +117,15 @@ def feature_extraction(segmento, sr):
     np.array(features)
     
     features=np.append(features, calc_mfcc(segmento, sr))
-    features=np.append(features, calc_mel(segmento))
-    features=np.append(features, calc_dct(segmento))
-    features=np.append(features, calc_fft(segmento))
+    features=np.append(features, calc_mel(segmento, sr))
+    #features=np.append(features, calc_chroma(segmento, sr))
+    #features=np.append(features, calc_dct(segmento))
+    #features=np.append(features, calc_fft(segmento))
 
     return features
 
 
-# In[90]:
+# In[11]:
 
 
 def get_x_y(path, seed=4):
@@ -123,7 +138,7 @@ def get_x_y(path, seed=4):
     random.shuffle(files)
     for f in files:
         data, sr = librosa.load(f, mono=True)
-        segmentos += (extract_intervals(data, 4))
+        segmentos += extract_intervals(data, 4)
         yt+=get_labels(f)    
 
     for segmento in segmentos:
@@ -132,7 +147,7 @@ def get_x_y(path, seed=4):
     return Xt,yt
 
 
-# In[91]:
+# In[12]:
 
 
 def unique_values(l):
@@ -143,28 +158,28 @@ def unique_values(l):
     return unique_list
 
 
-# In[93]:
+# In[13]:
 
 
-def print_conf_mtx(yt , y_pred, labels):
+def print_conf_mtx(yt, y_pred, labels):
     cm = confusion_matrix(yt, y_pred, labels)
-    
+    print("Matriz de Confusao do Modelo\n")
     print(cm)
-    
-    fig = plt.figure(figsize=(8,8))
-    ax = fig.add_subplot(111)
-    cax = ax.matshow(cm)
-    plt.title('Confusion matrix of the classifier')
-    fig.colorbar(cax)
-    ax.set_xticklabels([''] + labels)
-    ax.set_yticklabels([''] + labels)
-    plt.locator_params(nbins=len(labels))
-    plt.xlabel('Predicted')
-    plt.ylabel('True')
-    plt.show()
+    #%matplotlib
+    #fig = plt.figure(figsize=(8,8))
+    #ax = fig.add_subplot(111)
+    #cax = ax.matshow(cm)
+    #plt.title('Confusion matrix of the classifier')
+    #fig.colorbar(cax)
+    #ax.set_xticklabels([''] + labels)
+    #ax.set_yticklabels([''] + labels)
+    #plt.locator_params(nbins=len(labels))
+    #plt.xlabel('Predicted')
+    #plt.ylabel('True')
+    #plt.show()
 
 
-# In[10]:
+# In[14]:
 
 
 #amostras = data.shape[0]
@@ -172,65 +187,88 @@ def print_conf_mtx(yt , y_pred, labels):
 #print(f"quantidade de amostras = {amostras}")
 
 
-# In[32]:
+# In[15]:
 
 
 path = 'TREINAMENTO/'
-files = get_files(path)
+test_path = 'VALIDACAO/'
+print(f"Buscando Dados nas Pastas {path} e {test_path} internas do projeto...")
+
+
+# In[18]:
+
+
+print("Extraindo DataSet para Treino")
+X, y = get_x_y(path)
+print("Extraindo DataSet para Teste")
+Xt, yt = get_x_y(test_path)
+
+
+# In[30]:
+
+
+print("Instanciando Modelo SVC")
+svm = SVC(kernel='linear',probability=True, gamma='auto')
+
+
+# In[31]:
+
+
+print("Treinando Modelo...")
+svm.fit(X,y)
+
+
+# In[32]:
+
+
+print("Realizando Classificacao...")
+y_pred = svm.predict(Xt)
 
 
 # In[33]:
 
 
-X,y = get_x_y(path)
+svm_score=svm.score(Xt, yt)
+print(f"acuracia={svm_score:{4}.{4}}")
 
 
-# In[80]:
-
-
-svm = SVC(kernel='linear', class_weight='balanced',probability=True, gamma='auto')
-
-
-# In[81]:
-
-
-svm.fit(X,y)
-
-
-# In[37]:
-
-
-test_path = 'VALIDACAO/'
-Xt, yt = get_x_y(test_path)
-
-
-# In[82]:
-
-
-y_pred = svm.predict(Xt)
-
-
-# In[66]:
-
-
-yt == y_pred
-
-
-# In[41]:
-
-
-from sklearn.metrics import confusion_matrix
-
-
-# In[83]:
-
-
-svm.score(Xt, yt)
-
-
-# In[94]:
+# In[23]:
 
 
 labels = unique_values(y)
 print_conf_mtx(yt, y_pred, labels)
+
+
+# In[24]:
+
+
+print("\nInstanciando Modelo KNN")
+knc = KNeighborsClassifier(n_neighbors = 3, n_jobs = 3, p = 1,  weights='uniform')
+
+
+# In[25]:
+
+
+print("Treinando Modelo...")
+knc.fit(X,y)
+
+
+# In[26]:
+
+
+print("Realizando Classificacao...")
+y_knc = knc.predict(Xt)
+
+
+# In[27]:
+
+
+knn_score = knc.score(Xt, yt)
+print(f"acuracia={knn_score:{4}.{4}}")
+
+
+# In[28]:
+
+
+print_conf_mtx(yt, y_knc, labels)
 
