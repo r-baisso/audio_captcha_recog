@@ -115,9 +115,9 @@ def unique_values(l):
 # gera e imprime a matriz de confusao do modelo
 def print_conf_mtx(yt, y_pred, labels):
     cm = confusion_matrix(yt, y_pred, labels)
-    print("Matriz de Confusao do Modelo\n")
     print(cm)
 
+    """
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111)
     cax = ax.matshow(cm)
@@ -129,6 +129,7 @@ def print_conf_mtx(yt, y_pred, labels):
     plt.xlabel('Predicted')
     plt.ylabel('True')
     plt.show()
+    """
 
 """
 data, fs = librosa.load("TREINAMENTO/xbcb.wav", sr=8000)
@@ -162,6 +163,7 @@ y_pred = svm.predict(Xt)
 svm_score = svm.score(Xt, yt)
 print(f"\nAcuracia do modelo SVC = {svm_score:{4}.{4}}\n")
 
+print("Matriz de Confusao do Modelo SVC\n")
 labels = unique_values(y)
 print_conf_mtx(yt, y_pred, labels)
 
@@ -178,6 +180,7 @@ y_knc = knc.predict(Xt)
 knn_score = knc.score(Xt, yt)
 print(f"\nAcuracia do modelo KNN = {knn_score:{4}.{4}}\n")
 
+print("Matriz de Confusao do Modelo KNN\n")
 print_conf_mtx(yt, y_knc, labels)
 
 
