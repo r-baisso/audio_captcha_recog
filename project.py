@@ -2,22 +2,25 @@ print("\n--- Bem vindo ao Projeto de Reconhecimento de Audio ---")
 print("\nRealizando Imports de Libs necessarias...")
 
 import librosa
-import math
 import glob
 import random
 import re
 import pandas as pd
 import numpy as np
 import matplotlib.pylab as plt
-import scipy.signal as sg
-from scipy.fftpack import dct
-from scipy.fftpack import fft
+# import scipy.signal as sg
+# from scipy.fftpack import dct
+# from scipy.fftpack import fft
 # from scipy.fftpack import ifft
 # from sklearn.decomposition import PCA
-from sklearn.metrics import confusion_matrix
+# from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import multilabel_confusion_matrix
 
+"""
+# features descartadas ate o momento
 
 # calculo do sinal filtrado por filtro passa-baixas de ButterWorth
 def lowPassFilter(signal):
@@ -26,10 +29,6 @@ def lowPassFilter(signal):
     B, A = sg.butter(N, Wn, output='ba')
     smooth_data = sg.filtfilt(B,A, signal)
     return smooth_data
-
-def calc_chroma(segmento, sr):
-    av = segmento.to_numpy(copy=True)
-    return np.mean(librosa.feature.chroma_cens(y=av, sr=sr, n_chroma=24).T, axis=0)
 
 # calculo da serie discreta de cosenos do sinal
 def calc_dct(segmento):
@@ -40,8 +39,14 @@ def calc_dct(segmento):
 def calc_fft(segmento):
     av = segmento.to_numpy(copy=True)
     return abs(fft(av, n=24))
+"""
 
-# calcula o Mel Spectrogram do sinal
+# calculo do Chroma Energy Normalized Statistics (CENS) do sinal
+def calc_chroma(segmento, sr):
+    av = segmento.to_numpy(copy=True)
+    return np.mean(librosa.feature.chroma_cens(y=av, sr=sr, n_chroma=24).T, axis=0)
+
+# calculo do Mel Spectrogram do sinal
 def calc_mel(segmento, sr):
     av = segmento.to_numpy(copy=True)
     return np.mean(librosa.feature.melspectrogram(av, sr=sr).T, axis=0)
@@ -55,12 +60,11 @@ def calc_mfcc(segmento, sr):
 def feature_extraction(segmento, sr):
     features = []
     np.array(features)
-    
+
     features = np.append(features, calc_mfcc(segmento, sr))
     features = np.append(features, calc_mel(segmento, sr))
-  
-    """
     features = np.append(features, calc_chroma(segmento, sr))
+    """
     features = np.append(features, calc_dct(segmento))
     features = np.append(features, calc_fft(segmento))
     """
@@ -113,13 +117,20 @@ def unique_values(l):
 
 # gera e imprime a matriz de confusao do modelo
 def print_conf_mtx(yt, y_pred, labels, classifier):
+    print(labels)
+    print()
     cm = confusion_matrix(yt, y_pred, labels)
     print(cm)
-    
+    """
+    print("\nMatrizes de Confusao Individuais")
+    print(multilabel_confusion_matrix(yt, y_pred))
+    """
+    """
+    # plot da confusion matriz geral usando o matplotlib
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111)
     cax = ax.matshow(cm)
-    plt.title('Confusion matrix of the classifier ' + classifier)
+    plt.title('Confusion matrix of the ' + classifier + ' classifier')
     fig.colorbar(cax)
     ax.set_xticklabels([''] + labels)
     ax.set_yticklabels([''] + labels)
@@ -127,7 +138,7 @@ def print_conf_mtx(yt, y_pred, labels, classifier):
     plt.xlabel('Predicted')
     plt.ylabel('True')
     plt.show()
-    
+    """
 
 # MAIN
 
@@ -142,16 +153,34 @@ path = 'TREINAMENTO/'
 test_path = 'VALIDACAO/'
 print(f"\nBuscando dados nas Pastas {path} e {test_path} internas do projeto...")
 
-print("\nExtraindo DataSet para Treino")
+print("\nPreparando DataSet para Treino")
 X, y = get_x_y(path)
-print("Extraindo DataSet para Teste/Validacao")
+print("Preparando DataSet para Teste/Validacao")
 Xt, yt = get_x_y(test_path)
 
 labels = unique_values(y)
 
 
+# Classificador Random Forest
+
+print("\n\nInstanciando Modelo Random Forest")
+rfc = RandomForestClassifier(n_estimators = 500, max_depth = 50, random_state = 0)
+
+print("\nTreinando Modelo...")
+rfc.fit(X, y)
+
+print("Realizando Classificacao...")
+y_rfc = rfc.predict(Xt)
+
+rfc_score = rfc.score(Xt, yt)
+print(f"\nAcuracia do modelo Random Forest = {rfc_score:{4}.{4}}\n")
+
+print("Matriz de Confusao Geral do Modelo Random Forest\n")
+print_conf_mtx(yt, y_rfc, labels, "Random Forest")
+
+
 # Classificador SVC
-"""
+
 print("\nInstanciando Modelo SVC (kernel linear)")
 svm = SVC(kernel='linear', probability=True, gamma='auto')
 
@@ -164,10 +193,10 @@ y_pred = svm.predict(Xt)
 svm_score = svm.score(Xt, yt)
 print(f"\nAcuracia do modelo SVC = {svm_score:{4}.{4}}\n")
 
-print("Matriz de Confusao do Modelo SVC\n")
+print("Matriz de Confusao Geral do Modelo SVC\n")
 print_conf_mtx(yt, y_pred, labels, "SVC")
-"""
 
+"""
 # Classificador KNN
 
 print("\n\nInstanciando Modelo KNN (3 neighbours)")
@@ -182,7 +211,8 @@ y_knc = knc.predict(Xt)
 knn_score = knc.score(Xt, yt)
 print(f"\nAcuracia do modelo KNN = {knn_score:{4}.{4}}\n")
 
-print("Matriz de Confusao do Modelo KNN\n")
+print("Matriz de Confusao Geral do Modelo KNN\n")
 print_conf_mtx(yt, y_knc, labels, "KNN")
+"""
 
 

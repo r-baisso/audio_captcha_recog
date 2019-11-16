@@ -6,15 +6,15 @@
 
  ### Bibliotecas utilizadas
 * librosa
-* math
 * glob
 * random
 * pandas
 * numpy 
 * matplotlib
-* scipy
 * re
 * sklearn
+* scipy (not used)
+* math (not used)
 
 ### Como Executar
 * Apos configurar as pastas com os dados para executar o projeto, basta  realizar o comando:
@@ -27,8 +27,10 @@
 
 ### Resultados iniciais
 
-* Para o classificador SVC (kernel linear) obtivemos uma taxa de acerto de aproximadamente 60% (Nath: 59,55% aplicando shuffle nos files e 59,64% sem aplicar).
+* Para o classificador Random Forest obtivemos uma taxa de acerto de aproximadamente 74% (Nath: 73,88% com shuffle e 73,97% sem shuffle), para 500 estimators e max_depth = 50.
 
-* Para o classificador KNN (k neighbours) obtivemos uma taxa de acerto de aproximadamente 57%.
+* Para o classificador SVC (kernel linear) obtivemos uma taxa de acerto de aproximadamente 60% (Nath: 59,88% aplicando shuffle nos files e 59,93% sem aplicar).
+
+* Para o classificador KNN (3 neighbours) obtivemos uma taxa de acerto de aproximadamente 57% (Nath: 57,4%).
 
 * Em ambos os classificadores a taxa de acerto dos caracteres n, m, d e b foi mais baixa que a dos demais.
