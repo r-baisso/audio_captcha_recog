@@ -27,6 +27,8 @@
 
 ### Resultados iniciais
 
-* Para o classificador SVC (kernel linear) obtivemos uma taxa de acerto de aproximadamente 60%.
+* Para o classificador SVC (kernel linear) obtivemos uma taxa de acerto de aproximadamente 60% (Nath: 59,55% aplicando shuffle nos files e 59,64% sem aplicar).
 
 * Para o classificador KNN (k neighbours) obtivemos uma taxa de acerto de aproximadamente 57%.
+
+* Em ambos os classificadores a taxa de acerto dos caracteres n, m, d e b foi mais baixa que a dos demais.

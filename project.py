@@ -2,36 +2,22 @@ print("\n-- Bem vindo ao Projeto de Reconhecimento de Audio --")
 print("\nRealizando Imports de Libs necessarias...")
 
 import librosa
-import librosa.display
 import math
 import glob
 import random
+import re
 import pandas as pd
 import numpy as np
 import matplotlib.pylab as plt
 import scipy.signal as sg
-import re
 from scipy.fftpack import dct
 from scipy.fftpack import fft
-from scipy.fftpack import ifft
+# from scipy.fftpack import ifft
 from sklearn.metrics import confusion_matrix
-from sklearn.decomposition import PCA
+# from sklearn.decomposition import PCA
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 
-
-# calculo o do MFCC medio para cada audio de entrada
-def calc_mfcc(segmento, sr):
-    av = segmento.to_numpy(copy=True)
-    return np.mean(librosa.feature.mfcc(y=av, sr=sr, n_mfcc=24).T,axis=0)
-
-# divisao dos audios de entrada para separacao de cada letra
-def extract_intervals(signal, cut):
-    data_interval = []
-    interval = int(len(signal) // cut)
-    for i in range(0, cut) :
-        data_interval.append(pd.Series(signal[i*interval : (i+1)*interval]))
-    return data_interval
 
 # calculo do sinal filtrado por filtro passa-baixas de ButterWorth
 def lowPassFilter(signal):
@@ -41,29 +27,29 @@ def lowPassFilter(signal):
     smooth_data = sg.filtfilt(B,A, signal)
     return smooth_data
 
+def calc_chroma(segmento, sr):
+    av = segmento.to_numpy(copy=True)
+    return np.mean(librosa.feature.chroma_cens(y=av, sr=sr, n_chroma=24).T, axis=0)
+
 # calculo da serie discreta de cosenos do sinal
 def calc_dct(segmento):
     av = segmento.to_numpy(copy=True)
     return dct(av, type=3, n=24)
-
-# calcula o Mel Spectrogram do sinal
-def calc_mel(segmento, sr):
-    av = segmento.to_numpy(copy=True)
-    return np.mean(librosa.feature.melspectrogram(av, sr=sr).T,axis=0)
-
-def calc_chroma(segmento, sr):
-    av = segmento.to_numpy(copy=True)
-    return np.mean(librosa.feature.chroma_cens(y=av, sr=sr, n_chroma=24).T,axis=0)
 
 # calcula a FFT do sinal
 def calc_fft(segmento):
     av = segmento.to_numpy(copy=True)
     return abs(fft(av, n=24))
 
-# quebra o nome do arquivo em letras para categorizacao dos audios
-def get_labels(path_file):
-    path_file = re.sub("[ (1)]", "", path_file)
-    return list(path_file[-8:-4])
+# calcula o Mel Spectrogram do sinal
+def calc_mel(segmento, sr):
+    av = segmento.to_numpy(copy=True)
+    return np.mean(librosa.feature.melspectrogram(av, sr=sr).T, axis=0)
+
+# calculo do MFCC medio para cada audio de entrada
+def calc_mfcc(segmento, sr):
+    av = segmento.to_numpy(copy=True)
+    return np.mean(librosa.feature.mfcc(y=av, sr=sr, n_mfcc=24).T, axis=0)
 
 # realiza a extracao de features do sinal
 def feature_extraction(segmento, sr):
@@ -80,6 +66,19 @@ def feature_extraction(segmento, sr):
     """
     return features
 
+# divisao dos audios de entrada para separacao de cada letra
+def extract_intervals(signal, cut):
+    data_interval = []
+    interval = int(len(signal) // cut)
+    for i in range(0, cut) :
+        data_interval.append(pd.Series(signal[i*interval : (i+1)*interval]))
+    return data_interval
+
+# quebra o nome do arquivo em letras para categorizacao dos audios
+def get_labels(path_file):
+    path_file = re.sub("[ (1)]", "", path_file)
+    return list(path_file[-8:-4])
+
 # faz a aquisicao do caminho de todos os arquivos na pasta path
 def get_files(path):
     files = glob.glob(path + "*.wav")
@@ -90,8 +89,8 @@ def get_x_y(path, seed=4):
     Xt = []
     yt = []
     segmentos = []
-    #random.seed(seed)
-    #random.shuffle(files)
+    random.seed(seed)
+    random.shuffle(files)
 
     for f in files:
         data, sr = librosa.load(f, mono=True)
@@ -114,8 +113,7 @@ def unique_values(l):
 
 # gera e imprime a matriz de confusao do modelo
 def print_conf_mtx(yt, y_pred, labels):
-    cm = confusion_matrix(yt, y_pred, labels)
-    print(cm)
+    print(confusion_matrix(yt, y_pred, labels))
 
     """
     fig = plt.figure(figsize=(8,8))
@@ -131,6 +129,8 @@ def print_conf_mtx(yt, y_pred, labels):
     plt.show()
     """
 
+# MAIN
+
 """
 data, fs = librosa.load("TREINAMENTO/xbcb.wav", sr=8000)
 amostras = data.shape[0]
@@ -138,12 +138,9 @@ print(f"frequencia de amostragem = {fs}")
 print(f"quantidade de amostras = {amostras}")
 """
 
-# MAIN
-
 path = 'TREINAMENTO/'
 test_path = 'VALIDACAO/'
 print(f"\nBuscando dados nas Pastas {path} e {test_path} internas do projeto...")
-
 
 print("\nExtraindo DataSet para Treino")
 X, y = get_x_y(path)
@@ -151,7 +148,9 @@ print("Extraindo DataSet para Teste/Validacao")
 Xt, yt = get_x_y(test_path)
 
 
-print("\nInstanciando Modelo SVC (com kernel linear)")
+# Classificador SVC
+
+print("\nInstanciando Modelo SVC (kernel linear)")
 svm = SVC(kernel='linear', probability=True, gamma='auto')
 
 print("\nTreinando Modelo...")
@@ -168,7 +167,9 @@ labels = unique_values(y)
 print_conf_mtx(yt, y_pred, labels)
 
 
-print("\n\nInstanciando Modelo KNN (com 3 vizinhos)")
+# Classificador KNN
+
+print("\n\nInstanciando Modelo KNN (3 neighbours)")
 knc = KNeighborsClassifier(n_neighbors = 3, n_jobs = 3, p = 1,  weights='uniform')
 
 print("\nTreinando Modelo...")
@@ -182,5 +183,4 @@ print(f"\nAcuracia do modelo KNN = {knn_score:{4}.{4}}\n")
 
 print("Matriz de Confusao do Modelo KNN\n")
 print_conf_mtx(yt, y_knc, labels)
-
 
