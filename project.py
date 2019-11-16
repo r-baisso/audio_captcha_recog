@@ -1,4 +1,4 @@
-print("\n-- Bem vindo ao Projeto de Reconhecimento de Audio --")
+print("\n--- Bem vindo ao Projeto de Reconhecimento de Audio ---")
 print("\nRealizando Imports de Libs necessarias...")
 
 import librosa
@@ -13,8 +13,8 @@ import scipy.signal as sg
 from scipy.fftpack import dct
 from scipy.fftpack import fft
 # from scipy.fftpack import ifft
-from sklearn.metrics import confusion_matrix
 # from sklearn.decomposition import PCA
+from sklearn.metrics import confusion_matrix
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 
@@ -112,14 +112,14 @@ def unique_values(l):
 
 
 # gera e imprime a matriz de confusao do modelo
-def print_conf_mtx(yt, y_pred, labels):
-    print(confusion_matrix(yt, y_pred, labels))
-
-    """
+def print_conf_mtx(yt, y_pred, labels, classifier):
+    cm = confusion_matrix(yt, y_pred, labels)
+    print(cm)
+    
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111)
     cax = ax.matshow(cm)
-    plt.title('Confusion matrix of the classifier')
+    plt.title('Confusion matrix of the classifier ' + classifier)
     fig.colorbar(cax)
     ax.set_xticklabels([''] + labels)
     ax.set_yticklabels([''] + labels)
@@ -127,7 +127,7 @@ def print_conf_mtx(yt, y_pred, labels):
     plt.xlabel('Predicted')
     plt.ylabel('True')
     plt.show()
-    """
+    
 
 # MAIN
 
@@ -147,9 +147,11 @@ X, y = get_x_y(path)
 print("Extraindo DataSet para Teste/Validacao")
 Xt, yt = get_x_y(test_path)
 
+labels = unique_values(y)
+
 
 # Classificador SVC
-
+"""
 print("\nInstanciando Modelo SVC (kernel linear)")
 svm = SVC(kernel='linear', probability=True, gamma='auto')
 
@@ -163,9 +165,8 @@ svm_score = svm.score(Xt, yt)
 print(f"\nAcuracia do modelo SVC = {svm_score:{4}.{4}}\n")
 
 print("Matriz de Confusao do Modelo SVC\n")
-labels = unique_values(y)
-print_conf_mtx(yt, y_pred, labels)
-
+print_conf_mtx(yt, y_pred, labels, "SVC")
+"""
 
 # Classificador KNN
 
@@ -182,5 +183,6 @@ knn_score = knc.score(Xt, yt)
 print(f"\nAcuracia do modelo KNN = {knn_score:{4}.{4}}\n")
 
 print("Matriz de Confusao do Modelo KNN\n")
-print_conf_mtx(yt, y_knc, labels)
+print_conf_mtx(yt, y_knc, labels, "KNN")
+
 
