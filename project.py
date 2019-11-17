@@ -94,7 +94,7 @@ def get_x_y(path):
     seed = random.randint(1, 1000)
     random.seed(seed)
     random.shuffle(files)
-    print(seed)
+    print(f"Semente gerada: {seed}\n")
 
     for f in files:
         data, sr = librosa.load(f, mono=True)
