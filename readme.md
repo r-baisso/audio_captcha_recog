@@ -13,8 +13,8 @@
 * matplotlib
 * re
 * sklearn
-* scipy (not used)
-* math (not used)
+* scipy (not used anymore)
+* math (not used anymore)
 
 ### Como Executar
 * Apos configurar as pastas com os dados para executar o projeto, basta  realizar o comando:
@@ -23,7 +23,10 @@
 ```
 * Tomar o devido cuidado para nao executar utilizando python 2.
 
-* Os testes foram realizados tendo o Python 3.6 como versão default do sistema.
+* Os testes foram realizados tendo o Python 3.6. Caso essa versão não seja a default do sistema, basta executar o seguinte comando no terminal:
+```
+     python3.6 project.py
+```
 
 ### Resultados iniciais
 
@@ -33,4 +36,4 @@
 
 * Para o classificador KNN (3 neighbours) obtivemos uma taxa de acerto de aproximadamente 57% (Nath: 57,4%).
 
-* Em ambos os classificadores a taxa de acerto dos caracteres n, m, d e b foi mais baixa que a dos demais.
+* Em todos os classificadores a taxa de acerto dos caracteres n, m, d e b foi mais baixa que a dos demais.

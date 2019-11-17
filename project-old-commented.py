@@ -12,6 +12,8 @@ import matplotlib.pylab as plt
 # from scipy.fftpack import dct
 # from scipy.fftpack import fft
 # from scipy.fftpack import ifft
+# from sklearn.decomposition import PCA
+# from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix
@@ -86,15 +88,13 @@ def get_files(path):
     files = glob.glob(path + "*.wav")
     return files
 
-def get_x_y(path):
+def get_x_y(path, seed=4):
     files = get_files(path)
     Xt = []
     yt = []
     segmentos = []
-    seed = random.randint(1, 1000)
     random.seed(seed)
     random.shuffle(files)
-    print(seed)
 
     for f in files:
         data, sr = librosa.load(f, mono=True)
@@ -106,7 +106,7 @@ def get_x_y(path):
     
     return Xt,yt
 
-# lista os elementos (caracteres) unicos de um array
+
 def unique_values(l):
     unique_list = []
     for x in l: 
@@ -115,7 +115,7 @@ def unique_values(l):
     return unique_list
 
 
-# gera e imprime a matriz de confusao geral do modelo
+# gera e imprime a matriz de confusao do modelo
 def print_conf_mtx(yt, y_pred, labels, classifier):
     print(labels)
     print()
@@ -126,7 +126,7 @@ def print_conf_mtx(yt, y_pred, labels, classifier):
     print(multilabel_confusion_matrix(yt, y_pred))
     """
     """
-    # plot da confusion matrix geral usando o matplotlib
+    # plot da confusion matriz geral usando o matplotlib
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111)
     cax = ax.matshow(cm)
@@ -142,9 +142,15 @@ def print_conf_mtx(yt, y_pred, labels, classifier):
 
 # MAIN
 
+"""
+data, fs = librosa.load("TREINAMENTO/xbcb.wav", sr=8000)
+amostras = data.shape[0]
+print(f"frequencia de amostragem = {fs}")
+print(f"quantidade de amostras = {amostras}")
+"""
+
 path = 'TREINAMENTO/'
 test_path = 'VALIDACAO/'
-
 print(f"\nBuscando dados nas Pastas {path} e {test_path} internas do projeto...")
 
 print("\nPreparando DataSet para Treino")
@@ -189,4 +195,24 @@ print(f"\nAcuracia do modelo SVC = {svm_score:{4}.{4}}\n")
 
 print("Matriz de Confusao Geral do Modelo SVC\n")
 print_conf_mtx(yt, y_pred, labels, "SVC")
+
+"""
+# Classificador KNN
+
+print("\n\nInstanciando Modelo KNN (3 neighbours)")
+knc = KNeighborsClassifier(n_neighbors = 3, n_jobs = 3, p = 1,  weights='uniform')
+
+print("\nTreinando Modelo...")
+knc.fit(X, y)
+
+print("Realizando Classificacao...")
+y_knc = knc.predict(Xt)
+
+knn_score = knc.score(Xt, yt)
+print(f"\nAcuracia do modelo KNN = {knn_score:{4}.{4}}\n")
+
+print("Matriz de Confusao Geral do Modelo KNN\n")
+print_conf_mtx(yt, y_knc, labels, "KNN")
+"""
+
 
