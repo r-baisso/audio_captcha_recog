@@ -94,7 +94,7 @@ def get_x_y(path):
     seed = random.randint(1, 1000)
     random.seed(seed)
     random.shuffle(files)
-    print(f"Semente gerada: {seed}\n")
+    # print(f"Semente gerada: {seed}\n")
 
     for f in files:
         data, sr = librosa.load(f, mono=True)
@@ -125,8 +125,10 @@ def print_conf_mtx(yt, y_pred, labels, classifier):
     print("\nMatrizes de Confusao Individuais")
     print(multilabel_confusion_matrix(yt, y_pred))
     """
-    """
-    # plot da confusion matrix geral usando o matplotlib
+    
+    print("\nPlotando Confusion Matrix geral usando o matplotlib...")
+    print("Feche o arquivo de saída para continuar a execução")
+
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111)
     cax = ax.matshow(cm)
@@ -138,7 +140,7 @@ def print_conf_mtx(yt, y_pred, labels, classifier):
     plt.xlabel('Predicted')
     plt.ylabel('True')
     plt.show()
-    """
+    
 
 # MAIN
 
@@ -157,7 +159,7 @@ labels = unique_values(y)
 
 # Classificador Random Forest
 
-print("\n\nInstanciando Modelo Random Forest")
+print("\nInstanciando Modelo Random Forest (n_estimators = 500 e max_depth = 50)")
 rfc = RandomForestClassifier(n_estimators = 500, max_depth = 50, random_state = 0)
 
 print("\nTreinando Modelo...")
@@ -175,7 +177,7 @@ print_conf_mtx(yt, y_rfc, labels, "Random Forest")
 
 # Classificador SVC
 
-print("\nInstanciando Modelo SVC (kernel linear)")
+print("\n\nInstanciando Modelo SVC (kernel linear)")
 svm = SVC(kernel='linear', probability=True, gamma='auto')
 
 print("\nTreinando Modelo...")

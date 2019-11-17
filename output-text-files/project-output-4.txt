@@ -1,0 +1,60 @@
+
+--- Bem vindo ao Projeto de Reconhecimento de Audio ---
+
+Realizando Imports de Libs necessarias...
+
+Buscando dados nas Pastas TREINAMENTO/ e VALIDACAO/ internas do projeto...
+
+Preparando DataSet para Treino
+Preparando DataSet para Teste/Validacao
+
+
+Instanciando Modelo Random Forest (n_estimators = 500 e max_depth = 50)
+
+Treinando Modelo...
+Realizando Classificacao...
+
+Acuracia do modelo Random Forest = 0.7294
+
+Matriz de Confusao Geral do Modelo Random Forest
+
+['n', '6', 'c', 'm', 'x', 'h', '7', 'b', 'd', 'a']
+
+[[ 51   3   0  49   0   1   1   5   3   0]
+ [  0  80  11   0   7   0   1   1   0   0]
+ [  0  31  67   0   3   0   3   3   0   0]
+ [ 33   1   0  55   1   0   0   9   5   0]
+ [  0   4   1   1  89   0   0   0   0   0]
+ [  0   0   0   0   0 116   2   0   1   3]
+ [  0   2   2   0   3   2 105   0   0   0]
+ [  1   0   0   2   0   0   0  67  36   0]
+ [  2   0   1   3   0   1   1  46  56   0]
+ [  0   0   0   0   0   4   0   0   0  93]]
+
+Plotando Confusion Matrix geral usando o matplotlib...
+Feche o arquivo de saída para continuar a execução
+
+Instanciando Modelo SVC (kernel linear)
+
+Treinando Modelo...
+Realizando Classificacao...
+
+Acuracia do modelo SVC = 0.5993
+
+Matriz de Confusao Geral do Modelo SVC
+
+['n', '6', 'c', 'm', 'x', 'h', '7', 'b', 'd', 'a']
+
+[[49  2  2 46  0  1  1  6  6  0]
+ [ 1 68 12  0  9  0  7  2  1  0]
+ [ 0 18 62  0  2  1 14  9  1  0]
+ [29  2  2 41  0  2  1 10 17  0]
+ [ 1 16  5  1 66  0  3  2  1  0]
+ [ 0  0  0  6  0 94  6  1  2 13]
+ [ 1 17  2  4  1  6 79  3  1  0]
+ [ 2  2  6  5  2  1  2 55 30  1]
+ [ 2  4  2  2  3  1  2 46 45  3]
+ [ 0  0  1  0  1 11  3  0  0 81]]
+
+Plotando Confusion Matrix geral usando o matplotlib...
+Feche o arquivo de saída para continuar a execução
