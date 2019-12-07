@@ -1,6 +1,7 @@
 print("\n--- Bem vindo ao Projeto de Reconhecimento de Audio ---")
 print("\nRealizando Imports de Libs necessarias...")
 
+import sys
 import librosa
 import glob
 import random
@@ -152,29 +153,45 @@ def print_conf_mtx(yt, y_pred, labels, classifier):
 
 train_path = 'TREINAMENTO/'
 validation_path= 'VALIDACAO/'
-test_path = ''
+test_path = 'TESTE/'
 
-print(f"\nBuscando dados nas Pastas {train_path} e {validation_path} internas do projeto...")
+is_test = bool(sys.argv[1])
 
-print("\nPreparando DataSet para Treino")
-X, y = get_x_y(train_path)
-# X, y = get_x_y(train_path, True)
-print("Preparando DataSet para Teste/Validacao")
-Xt, yt = get_x_y(validation_path)
-# Xt, yt = get_x_y(validation_path, True)
+
+if is_test:
+    print(f"\nBuscando dados nas Pastas {train_path}, {validation_path} e {test_path} internas do projeto...")
+
+    print("\nPreparando DataSet para Treino")
+    X, y = get_x_y(train_path)
+    Xv, yv = get_x_y(validation_path)
+
+    X.append(Xv)
+    y.append(yv)
+
+    print("Preparando DataSet para Teste")
+    Xt, yt = get_x_y(test_path)
+else:
+    print(f"\nBuscando dados nas Pastas {train_path} e {validation_path} internas do projeto...")
+
+    print("\nPreparando DataSet para Treino")
+    X, y = get_x_y(train_path)
+    # X, y = get_x_y(train_path, True)
+    print("Preparando DataSet para Teste/Validacao")
+    Xt, yt = get_x_y(validation_path)
+    # Xt, yt = get_x_y(validation_path, True)
 
 labels = unique_values(y)
 
 
 # Classificador Random Forest
-from sklearn.feature_selection import RFECV
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import StratifiedKFold
-
 print("\nInstanciando Modelo Random Forest (n_estimators = 500 e max_depth = 50)")
 rfc = RandomForestClassifier(n_estimators = 500, max_depth = 50, random_state = 0)
 
 """
+from sklearn.feature_selection import RFECV
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import StratifiedKFold
+
 #APLICACAO DO CROSS VALIDATION PARA FEATURE SELECTION
 rdc_featr_sele = RandomForestClassifier(n_estimators = 500, max_depth = 50, random_state = 0)
 
