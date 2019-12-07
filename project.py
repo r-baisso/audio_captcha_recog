@@ -42,7 +42,7 @@ def calc_fft(segmento):
 # calculo do Chroma Energy Normalized Statistics (CENS) do sinal
 def calc_chroma(segmento, sr):
     av = segmento.to_numpy(copy=True)
-    return np.mean(librosa.feature.chroma_cens(y=av, sr=sr, n_chroma=24).T, axis=0)
+    return np.mean(librosa.feature.chroma_cqt(y=av, sr=sr, n_chroma=24).T, axis=0)
 
 # calculo do Mel Spectrogram do sinal
 def calc_mel(segmento, sr):
@@ -86,7 +86,7 @@ def get_files(path):
     files = glob.glob(path + "*.wav")
     return files
 
-def get_x_y(path):
+def get_x_y(path, reduce=False):
     files = get_files(path)
     Xt = []
     yt = []
@@ -95,11 +95,16 @@ def get_x_y(path):
     random.seed(seed)
     random.shuffle(files)
     # print(f"Semente gerada: {seed}\n")
-
+    i = 0
     for f in files:
         data, sr = librosa.load(f, mono=True)
         segmentos += extract_intervals(data, 4)
-        yt += get_labels(f)    
+        yt += get_labels(f)
+        # print(i)
+        if i > 30 and reduce:
+            break    
+        i += 1
+        
 
     for segmento in segmentos:
         Xt.append(feature_extraction(segmento, sr))
@@ -139,28 +144,74 @@ def print_conf_mtx(yt, y_pred, labels, classifier):
     plt.locator_params(nbins=len(labels))
     plt.xlabel('Predicted')
     plt.ylabel('True')
+    plt.savefig('confusion_matrix_'+ classifier +'.png')
     plt.show()
     
 
 # MAIN
 
-path = 'TREINAMENTO/'
-test_path = 'VALIDACAO/'
+train_path = 'TREINAMENTO/'
+validation_path= 'VALIDACAO/'
+test_path = ''
 
-print(f"\nBuscando dados nas Pastas {path} e {test_path} internas do projeto...")
+print(f"\nBuscando dados nas Pastas {train_path} e {validation_path} internas do projeto...")
 
 print("\nPreparando DataSet para Treino")
-X, y = get_x_y(path)
+X, y = get_x_y(train_path)
+# X, y = get_x_y(train_path, True)
 print("Preparando DataSet para Teste/Validacao")
-Xt, yt = get_x_y(test_path)
+Xt, yt = get_x_y(validation_path)
+# Xt, yt = get_x_y(validation_path, True)
 
 labels = unique_values(y)
 
 
 # Classificador Random Forest
+from sklearn.feature_selection import RFECV
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import StratifiedKFold
 
 print("\nInstanciando Modelo Random Forest (n_estimators = 500 e max_depth = 50)")
 rfc = RandomForestClassifier(n_estimators = 500, max_depth = 50, random_state = 0)
+
+"""
+#APLICACAO DO CROSS VALIDATION PARA FEATURE SELECTION
+rdc_featr_sele = RandomForestClassifier(n_estimators = 500, max_depth = 50, random_state = 0)
+
+rfecv = RFECV(estimator= rdc_featr_sele, step=1, cv=StratifiedKFold(n_splits=3), scoring = 'accuracy')
+print('Realizando Validacao Cruzada para Selecao de Features')
+rfecv.fit(X, y)
+
+print("Optimal number of features : %d" % rfecv.n_features_)
+print(rfecv.get_support(True))
+
+#No caso de utilizar a feature selection, implementar a selecao no numpy com np.take(array, index_list)
+#this is the classifier used for feature selection
+svm_featr_sele = SVC(kernel='linear', probability=True, gamma='auto') 
+
+rfecv_2 = RFECV(estimator=svm_featr_sele, step=1, cv=StratifiedKFold(n_splits=3), scoring = 'accuracy')
+print('Realizando Validacao Cruzada para Selecao de Features')
+rfecv_2.fit(X, y)
+
+print("Optimal number of features : %d" % rfecv_2.n_features_)
+print(rfecv_2.get_support(True))
+# Plot number of features VS. cross-validation scores
+plt.figure()
+plt.title("SVM Feature Selection CV")
+plt.xlabel("Number of features selected")
+plt.ylabel("Cross validation score (nb of correct classifications)")
+plt.plot(range(1, len(rfecv_2.grid_scores_) + 1), rfecv_2.grid_scores_)
+
+#Plot number of features VS. cross-validation scores
+plt.figure()
+plt.title("Random Forest Feature Selection CV")
+plt.xlabel("Number of features selected")
+plt.ylabel("Cross validation score (nb of correct classifications)")
+plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_)
+plt.show()
+
+"""
+
 
 print("\nTreinando Modelo...")
 rfc.fit(X, y)
@@ -175,7 +226,7 @@ print("Matriz de Confusao Geral do Modelo Random Forest\n")
 print_conf_mtx(yt, y_rfc, labels, "Random Forest")
 
 
-# Classificador SVC
+#Classificador SVC
 
 print("\n\nInstanciando Modelo SVC (kernel linear)")
 svm = SVC(kernel='linear', probability=True, gamma='auto')
