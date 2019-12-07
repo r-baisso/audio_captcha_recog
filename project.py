@@ -15,6 +15,7 @@ import matplotlib.pylab as plt
 # from scipy.fftpack import ifft
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
+from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import multilabel_confusion_matrix
 
@@ -155,8 +156,7 @@ train_path = 'TREINAMENTO/'
 validation_path= 'VALIDACAO/'
 test_path = 'TESTE/'
 
-is_test = bool(sys.argv[1])
-
+is_test = bool(int(sys.argv[1]))
 
 if is_test:
     print(f"\nBuscando dados nas Pastas {train_path}, {validation_path} e {test_path} internas do projeto...")
@@ -165,8 +165,8 @@ if is_test:
     X, y = get_x_y(train_path)
     Xv, yv = get_x_y(validation_path)
 
-    X.append(Xv)
-    y.append(yv)
+    X += (Xv)
+    y += (yv)
 
     print("Preparando DataSet para Teste")
     Xt, yt = get_x_y(test_path)
@@ -239,6 +239,9 @@ y_rfc = rfc.predict(Xt)
 rfc_score = rfc.score(Xt, yt)
 print(f"\nAcuracia do modelo Random Forest = {rfc_score:{4}.{4}}\n")
 
+print("Relatorio de Classificacao")
+print(classification_report(yt, y_rfc))
+
 print("Matriz de Confusao Geral do Modelo Random Forest\n")
 print_conf_mtx(yt, y_rfc, labels, "Random Forest")
 
@@ -256,6 +259,10 @@ y_pred = svm.predict(Xt)
 
 svm_score = svm.score(Xt, yt)
 print(f"\nAcuracia do modelo SVC = {svm_score:{4}.{4}}\n")
+
+
+print("Relatorio de Classificacao")
+print(classification_report(yt, y_pred))
 
 print("Matriz de Confusao Geral do Modelo SVC\n")
 print_conf_mtx(yt, y_pred, labels, "SVC")
