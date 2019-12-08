@@ -23,7 +23,7 @@ from sklearn.model_selection import GridSearchCV
 
 
 """
-# features descartadas ate o momento
+# features descartadas
 
 # calculo do sinal filtrado por filtro passa-baixas de ButterWorth
 def lowPassFilter(signal):
@@ -97,10 +97,11 @@ def get_x_y(path, reduce=False):
     yt = []
     segmentos = []
     seed = random.randint(1, 1000)
+    # print(f"Semente gerada: {seed}\n")
     random.seed(seed)
     random.shuffle(files)
-    # print(f"Semente gerada: {seed}\n")
     i = 0
+
     for f in files:
         data, sr = librosa.load(f, mono=True)
         segmentos += extract_intervals(data, 4)
@@ -110,7 +111,6 @@ def get_x_y(path, reduce=False):
             break    
         i += 1
         
-
     for segmento in segmentos:
         Xt.append(feature_extraction(segmento, sr))
     
@@ -139,7 +139,7 @@ def print_conf_mtx(yt, y_pred, labels, classifier):
     print("\nPlotando Confusion Matrix geral usando o matplotlib...")
     file_name = 'confusion_matrix_'+ classifier +'.png'
     print(f"\nPlot {file_name} salvo na pasta do projeto")
-    print("Feche o arquivo de saída para continuar a execução")
+    print("\nFeche o arquivo de saída para continuar a execução")
 
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111)
@@ -152,10 +152,10 @@ def print_conf_mtx(yt, y_pred, labels, classifier):
     plt.xlabel('Predicted')
     plt.ylabel('True')
     plt.savefig(file_name)
-    plt.show()
+    # plt.show()
     
 
-# MAIN
+### MAIN ###
 
 train_path = 'TREINAMENTO/'
 validation_path= 'VALIDACAO/'
@@ -175,13 +175,14 @@ if is_test:
 
     print("Preparando DataSet para Teste")
     Xt, yt = get_x_y(test_path)
+
 else:
     print(f"\nBuscando dados nas Pastas {train_path} e {validation_path} internas do projeto...")
 
     print("\nPreparando DataSet para Treino")
     X, y = get_x_y(train_path)
     # X, y = get_x_y(train_path, True)
-    print("Preparando DataSet para Teste/Validacao")
+    print("Preparando DataSet para Validacao")
     Xt, yt = get_x_y(validation_path)
     # Xt, yt = get_x_y(validation_path, True)
 
@@ -212,16 +213,20 @@ rf_gcv.fit(X, y)
 print("\nMelhores parametros:")
 pprint(rf_gcv.best_params_)
 
-# Classificador Random Forest parte 1
+""" Selecionando melhor modelo para realizar a classificacao """
+rfc = rf_gcv.best_estimator_
+
+
+# Classificador Random Forest - Parte 1 do projeto
+
 # print("\nInstanciando Modelo Random Forest (n_estimators = 500 e max_depth = 50)")
 # rfc = RandomForestClassifier(n_estimators = 500, max_depth = 50, random_state = 0)
-
-rfc = rf_gcv.best_estimator_
 
 # print("\nTreinando Modelo...")
 # rfc.fit(X, y)
 
-print("Realizando Classificacao...")
+
+print("\nRealizando Classificacao...")
 y_rfc = rfc.predict(Xt)
 
 rfc_score = rfc.score(Xt, yt)
@@ -232,6 +237,7 @@ print(classification_report(yt, y_rfc))
 
 print("Matriz de Confusao Geral do Modelo Random Forest\n")
 print_conf_mtx(yt, y_rfc, labels, "Random Forest")
+
 
 
 #Classificador SVC

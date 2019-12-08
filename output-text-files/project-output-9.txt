@@ -1,0 +1,65 @@
+
+--- Bem vindo ao Projeto de Reconhecimento de Audio ---
+
+Realizando Imports de Libs necessarias...
+
+Buscando dados nas Pastas TREINAMENTO/ e VALIDACAO/ internas do projeto...
+
+Preparando DataSet para Treino
+Preparando DataSet para Validacao
+
+Preparando para Validação Cruzada para Random Forest
+
+Parametros de busca:
+{'bootstrap': [True],
+ 'max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110],
+ 'n_estimators': [500, 666, 833, 1000, 1166, 1333, 1500, 1666, 1833, 2000]}
+
+Realizando Busca por Validação Cruzada
+Fitting 3 folds for each of 110 candidates, totalling 330 fits
+
+Melhores parametros:
+{'bootstrap': True, 'max_depth': 50, 'n_estimators': 1166}
+
+Realizando Classificacao...
+
+Acuracia do modelo Random Forest = 0.7341
+
+Relatorio de Classificacao
+              precision    recall  f1-score   support
+
+           6       0.68      0.78      0.73       100
+           7       0.94      0.95      0.94       114
+           a       0.97      0.95      0.96        97
+           b       0.52      0.60      0.56       106
+           c       0.78      0.64      0.70       107
+           d       0.56      0.52      0.54       110
+           h       0.94      0.96      0.95       122
+           m       0.50      0.52      0.51       104
+           n       0.58      0.50      0.54       113
+           x       0.91      0.94      0.92        95
+
+    accuracy                           0.73      1068
+   macro avg       0.74      0.74      0.73      1068
+weighted avg       0.74      0.73      0.73      1068
+
+Matriz de Confusao Geral do Modelo Random Forest
+
+['b', 'a', 'd', 'h', 'm', '7', '6', 'c', 'x', 'n']
+
+[[ 64   0  34   0   7   0   0   0   0   1]
+ [  0  92   0   5   0   0   0   0   0   0]
+ [ 42   0  57   0   5   1   0   1   0   4]
+ [  0   3   1 117   0   1   0   0   0   0]
+ [  7   0   7   0  54   0   1   0   1  34]
+ [  0   0   0   2   0 108   0   2   2   0]
+ [  1   0   0   0   0   1  78  16   4   0]
+ [  3   0   0   0   0   3  30  69   2   0]
+ [  0   0   0   0   0   0   4   1  89   1]
+ [  7   0   3   1  43   1   2   0   0  56]]
+
+Plotando Confusion Matrix geral usando o matplotlib...
+
+Plot confusion_matrix_Random Forest.png salvo na pasta do projeto
+
+Feche o arquivo de saída para continuar a execução
