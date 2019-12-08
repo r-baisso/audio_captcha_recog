@@ -1,7 +1,7 @@
 # Projeto Reconhecimento de Audios
 ### Materia de Mineracao de Dados UFABC 
 
- * Para este projeto e necessario que as pastas com os dados de treino e validacao estejam nas pastas 'TREINAMENTO/' e 'VALIDACAO/', respectivamente, dentro da pasta principal do projeto.
+ * Para este projeto e necessario que as pastas com os dados de treino, validacao e teste estejam nas pastas 'TREINAMENTO/', 'VALIDACAO/' e 'TESTE/', respectivamente, dentro da pasta principal do projeto.
  * Os dados devem estar formato .wav e duracao maxima de ~ 8s.
 
  ### Bibliotecas utilizadas
@@ -17,15 +17,20 @@
 * math (not used anymore)
 
 ### Como Executar
-* Apos configurar as pastas com os dados para executar o projeto, basta  realizar o comando:
+* Apos configurar as pastas com os dados para executar o projeto em modo de validação, basta  realizar o comando abaixo. Nesta opção, os dados de teste não são utilizados, apenas os dados nas pastas de treino e de validação.
 ```
-     python project.py
+     python project.py 0
+```
+* Para executar em modo de teste, basta realizar o comando abaixo. Nesta opção, o programa também utiliza os dados de validação para treinar.
+```
+     python project.py 1
 ```
 * Tomar o devido cuidado para nao executar utilizando python 2.
 
 * Os testes foram realizados tendo o Python 3.6. Caso essa versão não seja a default do sistema, basta executar o seguinte comando no terminal:
 ```
-     python3.6 project.py
+     python3.6 project.py 0
+     python3.6 project.py 1
 ```
 
 ### Resultados iniciais

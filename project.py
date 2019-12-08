@@ -9,6 +9,7 @@ import re
 import pandas as pd
 import numpy as np
 import matplotlib.pylab as plt
+from pprint import pprint
 # import scipy.signal as sg
 # from scipy.fftpack import dct
 # from scipy.fftpack import fft
@@ -18,6 +19,8 @@ from sklearn.svm import SVC
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import multilabel_confusion_matrix
+from sklearn.model_selection import GridSearchCV
+
 
 """
 # features descartadas ate o momento
@@ -134,6 +137,8 @@ def print_conf_mtx(yt, y_pred, labels, classifier):
     """
     
     print("\nPlotando Confusion Matrix geral usando o matplotlib...")
+    file_name = 'confusion_matrix_'+ classifier +'.png'
+    print(f"\nPlot {file_name} salvo na pasta do projeto")
     print("Feche o arquivo de saída para continuar a execução")
 
     fig = plt.figure(figsize=(8,8))
@@ -146,7 +151,7 @@ def print_conf_mtx(yt, y_pred, labels, classifier):
     plt.locator_params(nbins=len(labels))
     plt.xlabel('Predicted')
     plt.ylabel('True')
-    plt.savefig('confusion_matrix_'+ classifier +'.png')
+    plt.savefig(file_name)
     plt.show()
     
 
@@ -183,55 +188,38 @@ else:
 labels = unique_values(y)
 
 
-# Classificador Random Forest
-print("\nInstanciando Modelo Random Forest (n_estimators = 500 e max_depth = 50)")
-rfc = RandomForestClassifier(n_estimators = 500, max_depth = 50, random_state = 0)
+n_estimators = [int(x) for x in np.linspace(start = 500, stop = 2000, num = 10)]
+# max_features = ['auto', 'sqrt']
+max_depth = [int(x) for x in np.linspace(10, 110, num = 11)]
+# min_samples_split = [2, 5, 10]
+# min_samples_leaf = [1, 2, 4]
+bootstrap = [True]
 
-"""
-from sklearn.feature_selection import RFECV
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import StratifiedKFold
+random_grid = {'n_estimators': n_estimators,
+               'max_depth': max_depth,
+               'bootstrap': bootstrap}
 
-#APLICACAO DO CROSS VALIDATION PARA FEATURE SELECTION
-rdc_featr_sele = RandomForestClassifier(n_estimators = 500, max_depth = 50, random_state = 0)
+rf = RandomForestClassifier()
 
-rfecv = RFECV(estimator= rdc_featr_sele, step=1, cv=StratifiedKFold(n_splits=3), scoring = 'accuracy')
-print('Realizando Validacao Cruzada para Selecao de Features')
-rfecv.fit(X, y)
+print("\nPreparando para Validação Cruzada para Random Forest")
+print("\nParametros de busca:")
+pprint(random_grid)
 
-print("Optimal number of features : %d" % rfecv.n_features_)
-print(rfecv.get_support(True))
+print("\nRealizando Busca por Validação Cruzada")
+rf_gcv = GridSearchCV(estimator = rf, param_grid = random_grid, cv = 3, verbose=1, n_jobs = -1)
+rf_gcv.fit(X, y)
 
-#No caso de utilizar a feature selection, implementar a selecao no numpy com np.take(array, index_list)
-#this is the classifier used for feature selection
-svm_featr_sele = SVC(kernel='linear', probability=True, gamma='auto') 
+print("\nMelhores parametros:")
+pprint(rf_gcv.best_params_)
 
-rfecv_2 = RFECV(estimator=svm_featr_sele, step=1, cv=StratifiedKFold(n_splits=3), scoring = 'accuracy')
-print('Realizando Validacao Cruzada para Selecao de Features')
-rfecv_2.fit(X, y)
+# Classificador Random Forest parte 1
+# print("\nInstanciando Modelo Random Forest (n_estimators = 500 e max_depth = 50)")
+# rfc = RandomForestClassifier(n_estimators = 500, max_depth = 50, random_state = 0)
 
-print("Optimal number of features : %d" % rfecv_2.n_features_)
-print(rfecv_2.get_support(True))
-# Plot number of features VS. cross-validation scores
-plt.figure()
-plt.title("SVM Feature Selection CV")
-plt.xlabel("Number of features selected")
-plt.ylabel("Cross validation score (nb of correct classifications)")
-plt.plot(range(1, len(rfecv_2.grid_scores_) + 1), rfecv_2.grid_scores_)
+rfc = rf_gcv.best_estimator_
 
-#Plot number of features VS. cross-validation scores
-plt.figure()
-plt.title("Random Forest Feature Selection CV")
-plt.xlabel("Number of features selected")
-plt.ylabel("Cross validation score (nb of correct classifications)")
-plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_)
-plt.show()
-
-"""
-
-
-print("\nTreinando Modelo...")
-rfc.fit(X, y)
+# print("\nTreinando Modelo...")
+# rfc.fit(X, y)
 
 print("Realizando Classificacao...")
 y_rfc = rfc.predict(Xt)
@@ -248,22 +236,22 @@ print_conf_mtx(yt, y_rfc, labels, "Random Forest")
 
 #Classificador SVC
 
-print("\n\nInstanciando Modelo SVC (kernel linear)")
-svm = SVC(kernel='linear', probability=True, gamma='auto')
+# print("\n\nInstanciando Modelo SVC (kernel linear)")
+# svm = SVC(kernel='linear', probability=True, gamma='auto')
 
-print("\nTreinando Modelo...")
-svm.fit(X, y)
+# print("\nTreinando Modelo...")
+# svm.fit(X, y)
 
-print("Realizando Classificacao...")
-y_pred = svm.predict(Xt)
+# print("Realizando Classificacao...")
+# y_pred = svm.predict(Xt)
 
-svm_score = svm.score(Xt, yt)
-print(f"\nAcuracia do modelo SVC = {svm_score:{4}.{4}}\n")
+# svm_score = svm.score(Xt, yt)
+# print(f"\nAcuracia do modelo SVC = {svm_score:{4}.{4}}\n")
 
 
-print("Relatorio de Classificacao")
-print(classification_report(yt, y_pred))
+# print("Relatorio de Classificacao")
+# print(classification_report(yt, y_pred))
 
-print("Matriz de Confusao Geral do Modelo SVC\n")
-print_conf_mtx(yt, y_pred, labels, "SVC")
+# print("Matriz de Confusao Geral do Modelo SVC\n")
+# print_conf_mtx(yt, y_pred, labels, "SVC")
 
