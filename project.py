@@ -181,10 +181,9 @@ else:
 
     print("\nPreparando DataSet para Treino")
     X, y = get_x_y(train_path)
-    # X, y = get_x_y(train_path, True)
     print("Preparando DataSet para Validacao")
     Xt, yt = get_x_y(validation_path)
-    # Xt, yt = get_x_y(validation_path, True)
+    
 
 labels = unique_values(y)
 
